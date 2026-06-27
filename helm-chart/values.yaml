@@ -1,0 +1,18 @@
+replicaCount: 2
+
+aws:
+  accountId: "775935273911"
+  region: "ap-south-1"
+
+backend:
+  repository: "streamingapp-backend"
+  tag: "latest"
+  containerPort: 5000
+  servicePort: 5000
+  mongoUri: "mongodb://your-mongodb-uri"
+
+frontend:
+  repository: "streamingapp-frontend"
+  tag: "latest"
+  containerPort: 80
+  servicePort: 80
