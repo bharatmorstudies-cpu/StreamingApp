@@ -1,18 +1,24 @@
-replicaCount: 2
+# Update these paths inside your helm-chart/values.yaml file
+gatewayService:
+  image:
+    repository: 775935273911.dkr.ecr.ap-south-1.amazonaws.com/submission-gateway-service
+    tag: latest
+    pullPolicy: Always
 
-aws:
-  accountId: "775935273911"
-  region: "ap-south-1"
+userService:
+  image:
+    repository: 775935273911.dkr.ecr.ap-south-1.amazonaws.com/submission-user-service
+    tag: latest
+    pullPolicy: Always
 
-backend:
-  repository: "streamingapp-backend"
-  tag: "latest"
-  containerPort: 5000
-  servicePort: 5000
-  mongoUri: "mongodb://your-mongodb-uri"
+orderService:
+  image:
+    repository: 775935273911.dkr.ecr.ap-south-1.amazonaws.com/submission-order-service
+    tag: latest
+    pullPolicy: Always
 
-frontend:
-  repository: "streamingapp-frontend"
-  tag: "latest"
-  containerPort: 80
-  servicePort: 80
+productService:
+  image:
+    repository: 775935273911.dkr.ecr.ap-south-1.amazonaws.com/submission-product-service
+    tag: latest
+    pullPolicy: Always

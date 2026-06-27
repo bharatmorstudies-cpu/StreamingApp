@@ -1,21 +1,14 @@
-apiVersion: apps/v1
-kind: Deployment
+apiVersion: v1
+kind: Service
 metadata:
-  name: {{ .Release.Name }}-frontend
+  name: {{ .Release.Name }}-frontend-service
   labels:
     app: {{ .Release.Name }}-frontend
 spec:
-  replicas: {{ .Values.replicaCount }}
+  type: LoadBalancer
+  ports:
+    - port: 80
+      targetPort: 80
+      protocol: TCP
   selector:
-    matchLabels:
-      app: {{ .Release.Name }}-frontend
-  template:
-    metadata:
-      labels:
-        app: {{ .Release.Name }}-frontend
-    spec:
-      containers:
-        - name: frontend
-          image: "{{ .Values.aws.accountId }.dkr.ecr.{{ .Values.aws.region }}://{{ .Values.frontend.repository }}:{{ .Values.frontend.tag }}"
-          ports:
-            - containerPort: {{ .Values.frontend.containerPort }}
+    app: {{ .Release.Name }}-frontend

@@ -4,4 +4,4 @@ COPY package*.json ./
 RUN npm install --omit=dev
 COPY . .
 EXPOSE 5004
-CMD ["node", "server.js"]
+CMD ["node", "index.js"]

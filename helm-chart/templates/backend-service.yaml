@@ -1,11 +1,14 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: {{ .Release.Name }}-backend
+  name: backend-service
+  labels:
+    app: streaming-backend
 spec:
   type: ClusterIP
   ports:
-    - port: {{ .Values.backend.servicePort }}
-      targetPort: {{ .Values.backend.containerPort }}
+    - port: 5001
+      targetPort: 5001
+      protocol: TCP
   selector:
-    app: {{ .Release.Name }}-backend
+    app: streaming-backend
