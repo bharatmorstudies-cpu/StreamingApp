@@ -1,39 +1,48 @@
 pipeline {
     agent any
+    
     environment {
-        AWS_ACCOUNT_ID = '775935273911' 
-        AWS_DEFAULT_REGION = 'ap-south-1' 
-        FRONTEND_ECR_REPO = 'streamingapp-frontend'
-        BACKEND_ECR_REPO = 'streamingapp-backend'
-        IMAGE_TAG = "${env.BUILD_NUMBER}"
+        AWS_REGISTRY = "775935273911.dkr.ecr.ap-south-1.amazonaws.com"
+        AWS_REGION   = "ap-south-1"
     }
+    
     stages {
-        stage('Git Checkout') {
+        stage('Fetch Source Code') {
             steps {
                 checkout scm
             }
         }
-        stage('AWS ECR Authentication') {
+        
+        stage('Build & Push Auth Service') {
             steps {
-                script {
-                    sh "aws ecr get-login-password --region ${AWS_DEFAULT_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}.amazonaws.com"
-                }
+                sh 'cd backend/authService && docker build -t streaming-auth .'
+                sh 'aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_REGISTRY}'
+                sh 'docker tag streaming-auth:latest ${AWS_REGISTRY}/submission-user-service:latest'
+                sh 'docker push ${AWS_REGISTRY}/submission-user-service:latest'
             }
         }
-        stage('Build Docker Images') {
+        
+        stage('Build & Push Admin Service') {
             steps {
-                script {
-                    sh "docker build -t ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}://{FRONTEND_ECR_REPO}:${IMAGE_TAG} ./frontend"
-                    sh "docker build -t ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}://{BACKEND_ECR_REPO}:${IMAGE_TAG} ./backend"
-                }
+                sh 'cd backend/adminService && docker build -t streaming-admin .'
+                sh 'docker tag streaming-admin:latest ${AWS_REGISTRY}/submission-gateway-service:latest'
+                sh 'docker push ${AWS_REGISTRY}/submission-gateway-service:latest'
             }
         }
-        stage('Push Images to Amazon ECR') {
+
+        stage('Build & Push Chat Service') {
             steps {
-                script {
-                    sh "docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}://{FRONTEND_ECR_REPO}:${IMAGE_TAG}"
-                    sh "docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_DEFAULT_REGION}://{BACKEND_ECR_REPO}:${IMAGE_TAG}"
-                }
+                sh 'cd backend/chatService && docker build -t streaming-chat .'
+                sh 'docker tag streaming-chat:latest ${AWS_REGISTRY}/submission-order-service:latest'
+                sh 'docker push ${AWS_REGISTRY}/submission-order-service:latest'
+            }
+        }
+
+        stage('Build & Push Streaming Service') {
+            steps {
+                sh 'cd backend/streamingService && docker build -t streaming-streaming .'
+                sh 'docker tag streaming-streaming:latest ${AWS_REGISTRY}/submission-product-service:latest'
+                sh 'docker push ${AWS_REGISTRY}/submission-product-service:latest'
             }
         }
     }
