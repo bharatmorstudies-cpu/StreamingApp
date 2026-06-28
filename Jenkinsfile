@@ -1,48 +1,28 @@
 pipeline {
     agent any
     
-    environment {
-        AWS_REGISTRY = "775935273911.dkr.ecr.ap-south-1.amazonaws.com"
-        AWS_REGION   = "ap-south-1"
-    }
-    
     stages {
-        stage('Fetch Source Code') {
+        stage('1. Code Checkout') {
             steps {
+                // This pulls your latest working code from GitHub into Jenkins
                 checkout scm
             }
         }
         
-        stage('Build & Push Auth Service') {
+        stage('2. Build Frontend Container') {
             steps {
-                sh 'cd backend/authService && docker build -t streaming-auth .'
-                sh 'aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_REGISTRY}'
-                sh 'docker tag streaming-auth:latest ${AWS_REGISTRY}/submission-user-service:latest'
-                sh 'docker push ${AWS_REGISTRY}/submission-user-service:latest'
+                echo 'Compiling React and building high-performance Nginx container...'
+                sh 'cd frontend && docker build -t streaming-frontend:latest .'
             }
         }
         
-        stage('Build & Push Admin Service') {
+        stage('3. Build Backend Microservices') {
             steps {
-                sh 'cd backend/adminService && docker build -t streaming-admin .'
-                sh 'docker tag streaming-admin:latest ${AWS_REGISTRY}/submission-gateway-service:latest'
-                sh 'docker push ${AWS_REGISTRY}/submission-gateway-service:latest'
-            }
-        }
-
-        stage('Build & Push Chat Service') {
-            steps {
-                sh 'cd backend/chatService && docker build -t streaming-chat .'
-                sh 'docker tag streaming-chat:latest ${AWS_REGISTRY}/submission-order-service:latest'
-                sh 'docker push ${AWS_REGISTRY}/submission-order-service:latest'
-            }
-        }
-
-        stage('Build & Push Streaming Service') {
-            steps {
-                sh 'cd backend/streamingService && docker build -t streaming-streaming .'
-                sh 'docker tag streaming-streaming:latest ${AWS_REGISTRY}/submission-product-service:latest'
-                sh 'docker push ${AWS_REGISTRY}/submission-product-service:latest'
+                echo 'Compiling Node.js environment layers for all microservices...'
+                sh 'cd backend/authService && docker build -t streaming-auth:latest .'
+                sh 'cd backend/adminService && docker build -t streaming-admin:latest .'
+                sh 'cd backend/chatService && docker build -t streaming-chat:latest .'
+                sh 'cd backend/streamingService && docker build -t streaming-streaming:latest .'
             }
         }
     }
